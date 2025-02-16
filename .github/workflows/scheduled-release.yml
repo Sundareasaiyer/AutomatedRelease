@@ -21,7 +21,7 @@ jobs:
       - name: Run Tests
         run: |
           echo "Running tests..."
-          # Add your test commands here (e.g., npm test, pytest, etc.)
+          npm test
       - name: Merge Release into Main
         run: |
           git checkout main
