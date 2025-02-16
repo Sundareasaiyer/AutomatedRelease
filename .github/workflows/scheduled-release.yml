@@ -1,0 +1,38 @@
+# This is a scheduled workflow to automate the release process on the 25th of every month
+
+name: Scheduled Monthly Release
+on:
+  schedule:
+    # Trigger on the 25th of every month at 00:00 UTC
+    - cron: '0 0 25 * *'
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Create Release Branch
+        run: |
+          git checkout develop
+          git pull origin develop
+          RELEASE_VERSION=$(date +'v%Y.%m.0')
+          git checkout -b release/$RELEASE_VERSION
+          git push origin release/$RELEASE_VERSION
+      - name: Run Tests
+        run: |
+          echo "Running tests..."
+          # Add your test commands here (e.g., npm test, pytest, etc.)
+      - name: Merge Release into Main
+        run: |
+          git checkout main
+          git merge release/$RELEASE_VERSION --no-ff -m "Release $RELEASE_VERSION"
+          git tag $RELEASE_VERSION
+          git push origin main --tags
+      - name: Merge Release into Develop
+        run: |
+          git checkout develop
+          git merge release/$RELEASE_VERSION --no-ff -m "Merge release $RELEASE_VERSION into develop"
+          git push origin develop
+      - name: Cleanup Release Branch
+        run: |
+          git push origin --delete release/$RELEASE_VERSION
